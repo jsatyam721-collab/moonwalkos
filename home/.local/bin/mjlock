@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+VIDEO="$HOME/.local/share/mjlock/moonwalk.mp4"
+
+if [[ ! -f "$VIDEO" ]] || ! command -v swaylock-plugin >/dev/null || ! command -v mpvpaper >/dev/null; then
+    exec hyprlock "$@"
+fi
+
+swaylock-plugin \
+    --command "mpvpaper -o 'no-audio --loop-file=inf --hwdec=auto --panscan=1.0' '*' '$VIDEO'" \
+    --ignore-empty-password \
+    --show-failed-attempts \
+    --font "JetBrainsMono Nerd Font" \
+    --font-size 18 \
+    --indicator-radius 46 \
+    --indicator-thickness 5 \
+    --indicator-y-position 660 \
+    --inside-color 00000000 \
+    --inside-clear-color 00000000 \
+    --inside-ver-color 00000000 \
+    --inside-wrong-color 00000000 \
+    --line-color 00000000 \
+    --line-clear-color 00000000 \
+    --line-ver-color 00000000 \
+    --line-wrong-color 00000000 \
+    --separator-color 00000000 \
+    --ring-color f3ecd655 \
+    --ring-clear-color f3ecd6aa \
+    --ring-ver-color 9fb4ffcc \
+    --ring-wrong-color ff4a4acc \
+    --key-hl-color fffaf0ff \
+    --bs-hl-color ff4a4aff \
+    --text-color f3ecd6ff \
+    --text-clear-color f3ecd6ff \
+    --text-ver-color 9fb4ffff \
+    --text-wrong-color ff4a4aff \
+    "$@"
+status=$?
+pkill -f -- "mpvpaper.*$VIDEO" 2>/dev/null
+exit $status

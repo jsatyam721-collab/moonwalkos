@@ -1,0 +1,57 @@
+$HOME/Documents/Obsidian\ Vault/.obsidian/snippets/moonwalk.css|$HOME/.local/bin/obsidian-graph-groups
+/* MoonwalkOS: generated from the wallpaper by wallbash. Edit ~/.config/wallbash/always/obsidian.dcol instead. */
+/* mode: <wallbash_mode> */
+body {
+  --mw-node-dark: <wallbash_1xa7_rgba(1)>;
+  --mw-node-light: <wallbash_1xa3_rgba(1)>;
+  --mw-focus-dark: <wallbash_1xa9_rgba(1)>;
+  --mw-focus-light: <wallbash_1xa1_rgba(1)>;
+  --mw-dim-dark: <wallbash_1xa3_rgba(0.9)>;
+  --mw-dim-light: <wallbash_1xa7_rgba(0.9)>;
+  --mw-line-dark: <wallbash_1xa6_rgba(0.28)>;
+  --mw-line-light: <wallbash_1xa4_rgba(0.28)>;
+  --mw-line-hot-dark: <wallbash_1xa8_rgba(0.9)>;
+  --mw-line-hot-light: <wallbash_1xa2_rgba(0.9)>;
+  --mw-text-dark: <wallbash_1xa9_rgba(0.88)>;
+  --mw-text-light: <wallbash_1xa1_rgba(0.88)>;
+  --mw-g1-dark: <wallbash_1xa7_rgba(1)>;
+  --mw-g2-dark: <wallbash_2xa7_rgba(1)>;
+  --mw-g3-dark: <wallbash_3xa7_rgba(1)>;
+  --mw-g4-dark: <wallbash_4xa7_rgba(1)>;
+  --mw-g1-light: <wallbash_1xa3_rgba(1)>;
+  --mw-g2-light: <wallbash_2xa3_rgba(1)>;
+  --mw-g3-light: <wallbash_3xa3_rgba(1)>;
+  --mw-g4-light: <wallbash_4xa3_rgba(1)>;
+
+  --graph-node: var(--mw-node-<wallbash_mode>);
+  --graph-node-focused: var(--mw-focus-<wallbash_mode>);
+  --graph-node-unresolved: var(--mw-dim-<wallbash_mode>);
+  --graph-node-tag: var(--mw-g3-<wallbash_mode>);
+  --graph-node-attachment: var(--mw-g4-<wallbash_mode>);
+  --graph-line: var(--mw-line-<wallbash_mode>);
+  --graph-text: var(--mw-text-<wallbash_mode>);
+
+  --link-color: var(--mw-g2-<wallbash_mode>);
+  --link-color-hover: var(--mw-focus-<wallbash_mode>);
+  --link-external-color: var(--mw-g3-<wallbash_mode>);
+  --link-external-color-hover: var(--mw-focus-<wallbash_mode>);
+  --link-unresolved-color: var(--mw-dim-<wallbash_mode>);
+  --link-unresolved-opacity: 0.75;
+  --link-decoration: none;
+  --link-decoration-hover: underline;
+  --link-external-decoration: none;
+}
+
+.graph-view.color-fill { color: var(--graph-node); }
+.graph-view.color-fill-focused { color: var(--graph-node-focused); }
+.graph-view.color-fill-highlight { color: var(--graph-node-focused); }
+.graph-view.color-fill-unresolved { color: var(--graph-node-unresolved); }
+.graph-view.color-fill-tag { color: var(--graph-node-tag); }
+.graph-view.color-fill-attachment { color: var(--graph-node-attachment); }
+.graph-view.color-line { color: var(--graph-line); }
+.graph-view.color-line-highlight { color: var(--mw-line-hot-<wallbash_mode>); }
+.graph-view.color-text { color: var(--graph-text); }
+.graph-view.color-arrow { color: var(--mw-line-hot-<wallbash_mode>); }
+.graph-view.color-circle { color: var(--graph-node-focused); }
+
+.cm-hmd-internal-link, .internal-link { transition: color 160ms ease; }

@@ -1,0 +1,280 @@
+* {
+    font-family: "Nunito", "JetBrainsMono Nerd Font Propo";
+    font-weight: 900;
+    font-size: 10.5px;
+    min-height: 0;
+    min-width: 0;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    text-shadow: none;
+    background-image: none;
+    padding: 0;
+    margin: 0;
+}
+
+window#waybar {
+    background: transparent;
+}
+
+tooltip {
+    background: @bb-fill;
+    border: 2.5px solid @bb-ink;
+    border-radius: 10px;
+}
+
+tooltip label {
+    color: @bb-on-fill;
+    font-weight: 700;
+    font-family: "JetBrainsMono Nerd Font";
+}
+
+#workspaces.label,
+#tray,
+#status,
+#custom-weather,
+#clock,
+#utils,
+#hw,
+#battery,
+#pulseaudio.mic,
+#focus,
+#custom-power {
+    border: 2.5px solid @bb-ink;
+    border-radius: 9px;
+    min-height: 19px;
+    margin: 0 3px;
+    padding: 0 9px;
+    transition: background-color 600ms ease-in-out, color 600ms ease-in-out, border-color 600ms ease-in-out;
+}
+
+#tray,
+#status,
+#custom-weather,
+#clock,
+#utils,
+#hw,
+#battery {
+    background-color: @bb-fill;
+    color: @bb-on-fill;
+    box-shadow: inset 0 0 0 1.5px @bb-ring;
+}
+
+#workspaces.label,
+#image.cover > image,
+#mpris,
+#custom-power {
+    background-color: @bb-pale;
+    color: @bb-on-pale;
+    box-shadow: inset 0 0 0 1.5px alpha(@bb-ink, 0.35), inset 0 2px 0 1px alpha(@bb-shine, 0.55);
+}
+
+#workspaces.label button {
+    padding: 0 6px;
+    color: @bb-on-pale;
+    background: transparent;
+}
+
+#workspaces.label button label {
+    color: @bb-on-pale;
+}
+
+#image.cover > image,
+#mpris {
+    border: 2.5px solid @bb-ink;
+    min-height: 19px;
+}
+
+#image.cover {
+    background: transparent;
+}
+
+#image.cover > image {
+    margin: 0 0 0 3px;
+    padding: 0 0 0 3px;
+    border-right: none;
+    border-radius: 9px 0 0 9px;
+}
+
+#mpris {
+    margin: 0 3px 0 0;
+    padding: 0 12px 0 8px;
+    border-left: none;
+    border-radius: 0 9px 9px 0;
+    color: @bb-on-pale;
+    min-width: 92px;
+}
+
+#tray {
+    padding: 0 7px;
+}
+
+#tray > * {
+    margin: 0 3px;
+}
+
+#tray > .needs-attention {
+    background-color: @bb-hot;
+    border-radius: 6px;
+}
+
+#network,
+#bluetooth,
+#pulseaudio,
+#custom-shot,
+#custom-picker,
+#custom-night,
+#idle_inhibitor,
+#custom-clip,
+#custom-power {
+    font-family: "JetBrainsMono Nerd Font Propo";
+    font-weight: 700;
+}
+
+#network,
+#bluetooth,
+#pulseaudio:not(.mic) {
+    padding: 0 5px;
+    font-size: 12px;
+    color: @bb-on-fill;
+}
+
+#status {
+    padding: 0 5px;
+}
+
+#workspaces.nums {
+    margin: 0 2px;
+}
+
+#workspaces.nums button {
+    min-width: 19px;
+    min-height: 19px;
+    margin: 0 2px;
+    padding: 0;
+    border: 2.5px solid @bb-ink;
+    border-radius: 50%;
+    background-color: @bb-pale;
+    color: @bb-on-pale;
+    box-shadow: inset 0 0 0 1.5px alpha(@bb-ink, 0.35), inset 0 2px 0 1px alpha(@bb-shine, 0.55);
+    transition: background-color 250ms ease-out, color 600ms ease-in-out, border-color 600ms ease-in-out;
+}
+
+#workspaces.nums button label {
+    color: @bb-on-pale;
+    font-size: 10px;
+}
+
+#workspaces.nums button.active {
+    background-color: @bb-media;
+    box-shadow: inset 0 0 0 1.5px alpha(@bb-ink, 0.45), inset 0 2px 0 1px alpha(@bb-shine, 0.3);
+}
+
+#workspaces.nums button.active label {
+    color: @bb-on-media;
+}
+
+#workspaces.nums button.urgent {
+    background-color: @bb-hot;
+}
+
+#workspaces.nums button:hover {
+    background-color: @bb-shine;
+}
+
+#utils {
+    padding: 0 4px;
+}
+
+#custom-gpu {
+    margin-left: 10px;
+}
+
+#custom-cpu.critical,
+#custom-gpu.critical {
+    color: @bb-shine;
+}
+
+#custom-shot,
+#custom-picker,
+#custom-night,
+#idle_inhibitor,
+#custom-clip {
+    min-width: 22px;
+    margin: 2px 1px;
+    padding: 0 1px;
+    border-radius: 6px;
+    font-size: 12px;
+    color: @bb-on-fill;
+}
+
+#custom-shot:hover,
+#custom-picker:hover,
+#custom-night:hover,
+#idle_inhibitor:hover,
+#custom-clip:hover {
+    background-color: alpha(@bb-pale, 0.25);
+}
+
+#custom-night.active,
+#idle_inhibitor.activated {
+    background-color: @bb-pale;
+    color: @bb-on-pale;
+    box-shadow: inset 0 0 0 1.5px alpha(@bb-ink, 0.5);
+}
+
+#battery.charging,
+#battery.plugged {
+    color: @bb-on-fill;
+}
+
+#battery.warning:not(.charging) {
+    background-color: @bb-hot;
+    color: @bb-on-pale;
+}
+
+#pulseaudio.mic {
+    padding: 0 10px;
+    font-size: 12px;
+    background-color: @bb-pale;
+    color: @bb-on-pale;
+    box-shadow: inset 0 0 0 1.5px alpha(@bb-ink, 0.35), inset 0 2px 0 1px alpha(@bb-shine, 0.55);
+}
+
+#pulseaudio.mic:not(.source-muted) {
+    background-color: @bb-hot;
+}
+
+#focus {
+    padding: 0 10px 0 4px;
+    background-color: @bb-media;
+    color: @bb-on-media;
+    box-shadow: inset 0 0 0 1.5px alpha(@bb-ink, 0.45), inset 0 2px 0 1px alpha(@bb-shine, 0.25);
+}
+
+#taskbar button {
+    padding: 0 1px;
+    margin: 0 -2px 0 0;
+    background: transparent;
+    border-radius: 50%;
+}
+
+#taskbar button.active {
+    background-color: alpha(@bb-on-media, 0.25);
+}
+
+#window {
+    margin-left: 6px;
+    color: @bb-on-media;
+}
+
+window#waybar.empty #window {
+    margin-left: 0;
+}
+
+#custom-power {
+    min-width: 19px;
+    padding: 0;
+    border-radius: 50%;
+    font-size: 11px;
+}

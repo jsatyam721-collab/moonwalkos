@@ -1,0 +1,14 @@
+{
+  "pulseaudio#microphone": {
+    "format": "{format_source}",
+    "rotate": 0,
+    "format-source": "\udb80\udf6c",
+    "format-source-muted": "\uf131",
+    "on-click": "pavucontrol-qt -t 4 || pavucontrol -t 4",
+    "on-click-middle": "moonwalk-shell volumecontrol -i m",
+    "on-scroll-up": "moonwalk-shell volumecontrol -i i",
+    "on-scroll-down": "moonwalk-shell volumecontrol -i d",
+    "tooltip-format": "{format_source} {source_desc} // {source_volume}%",
+    "scroll-step": 5
+  }
+}

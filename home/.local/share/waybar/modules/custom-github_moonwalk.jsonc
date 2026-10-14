@@ -1,0 +1,8 @@
+{
+    "custom/github_moonwalk": {
+        "format": "\ue709 ",
+        "rotate": 0,
+        "tooltip-format": "\ue709 MoonwalkOS repository",
+        "on-click": "xdg-open https://github.com/HyDE-Project/MoonwalkOS"
+    }
+}

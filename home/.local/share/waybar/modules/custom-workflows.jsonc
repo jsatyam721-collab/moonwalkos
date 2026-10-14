@@ -1,0 +1,11 @@
+{
+  "custom/workflows": {
+    "format": "{}",
+    "interval": "once",
+    "exec": "moonwalk-shell workflows --waybar",
+    "on-click": "moonwalk-shell workflows --select;pkill -RTMIN+19 waybar",
+    "tooltip": true,
+    "return-type": "json",
+    "signal": 19
+  }
+}

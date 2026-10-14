@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+C="$HOME/.config/moonwalk-power"
+qs ipc -p "$C" call power toggle 2>/dev/null && exit 0
+setsid -f qs -p "$C" >/dev/null 2>&1
+for _ in $(seq 40); do sleep 0.05; qs ipc -p "$C" call power show 2>/dev/null && exit 0; done
+exit 1

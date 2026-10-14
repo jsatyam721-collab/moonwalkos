@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+moonwalk-shell hyprsunset -rq | jq -c '.text = "󰖔" | .class = (.alt // "inactive")'

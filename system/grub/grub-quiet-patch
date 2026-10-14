@@ -1,0 +1,8 @@
+#!/bin/sh
+set -e
+f=/etc/grub.d/10_linux
+sed -i '/$(echo "$message" | grub_quote)/d' "$f"
+grep -q '^	clear$' "$f" || sed -i 's/^	linux	\${rel_dirname}/	clear\n&/' "$f"
+grub-mkconfig -o /boot/grub/grub.cfg.new
+grub-script-check /boot/grub/grub.cfg.new
+mv /boot/grub/grub.cfg.new /boot/grub/grub.cfg

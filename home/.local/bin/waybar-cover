@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+C="$HOME/.cache/waybar-cover"
+mkdir -p "$C"
+status=$(playerctl status 2>/dev/null) || { echo "$C/none"; exit 0; }
+[ "$status" = "Stopped" ] && { echo "$C/none"; exit 0; }
+url=$(playerctl metadata mpris:artUrl 2>/dev/null)
+key=$(printf '%s' "${url:-none}" | md5sum | cut -c1-16)
+out="$C/$key.png"
+if [ ! -s "$out" ]; then
+    src=""
+    case "$url" in
+        file://*) src="${url#file://}"; src=$(printf '%b' "${src//%/\\x}") ;;
+        http*) src="$C/$key.src"; [ -s "$src" ] || curl -sfL --max-time 4 -o "$src" "$url" || src="" ;;
+    esac
+    if [ -n "$src" ] && [ -s "$src" ]; then
+        magick "$src" -resize 96x96^ -gravity center -extent 96x96 \( -size 96x96 xc:none -fill white -draw "roundrectangle 0,0 95,95 22,22" \) -compose DstIn -composite "$out" 2>/dev/null
+    fi
+    if [ ! -s "$out" ]; then
+        out="$C/fallback.png"
+        [ -s "$out" ] || magick -size 96x96 xc:none -fill "rgba(255,255,255,0.18)" -draw "roundrectangle 0,0 95,95 22,22" -fill "rgba(255,255,255,0.85)" -font "JetBrainsMono-NF-ExtraBold" -pointsize 56 -gravity center -annotate +0+2 "󰝚" "$out" 2>/dev/null
+    fi
+    find "$C" -type f -mtime +7 -delete 2>/dev/null
+fi
+echo "$out"

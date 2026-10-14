@@ -1,0 +1,44 @@
+#!/usr/bin/env python3
+import os
+import re
+
+HOME = os.path.expanduser("~")
+THEME = f"{HOME}/.config/waybar/theme.css"
+MARK = "/* bubble-pick */"
+
+css = open(THEME).read().split(MARK)[0].rstrip() + "\n"
+mode = "light" if "bb-mode-light" in css else "dark"
+cols = {k: tuple(int(x) for x in v.split(",")[:3]) for k, v in re.findall(r"@define-color (bbg\d-\w+) rgba\(([^)]*)\);", css)}
+
+
+def chroma(c):
+    return max(c) - min(c)
+
+
+def score(g):
+    pry = cols.get(f"bbg{g}-pry", (0, 0, 0))
+    mid = cols.get(f"bbg{g}-xa5", (0, 0, 0))
+    return chroma(pry) * 2 + chroma(mid)
+
+
+groups = sorted(range(1, 5), key=score, reverse=True)
+base, accent = groups[0], groups[1]
+if mode == "dark":
+    roles = {"ink": "xa1", "fill": "xa2", "ring": "xa4", "pale": "xa8", "shine": "xa9", "on-fill": "xa9", "hot": "xa7"}
+    deep = "xa1"
+else:
+    roles = {"ink": "xa9", "fill": "xa8", "ring": "xa6", "pale": "xa2", "shine": "xa1", "on-fill": "xa1", "hot": "xa3"}
+    deep = "xa9"
+out = [MARK]
+for role, shade_key in roles.items():
+    g = accent if role == "hot" else base
+    out.append(f"@define-color bb-{role} @bbg{g}-{shade_key};")
+out.append(f"@define-color bb-on-pale shade(@bbg{base}-{deep}, 0.55);")
+out.append(f"@define-color bb-active @bbg{accent}-{'xa7' if mode == 'dark' else 'xa3'};")
+out.append(f"@define-color bb-media @bbg{accent}-pry;")
+out.append(f"@define-color bb-on-media @bbg{accent}-txt;")
+tmp = THEME + ".tmp"
+with open(tmp, "w") as f:
+    f.write(css + "\n".join(out) + "\n")
+os.replace(tmp, THEME)
+os.utime(f"{HOME}/.config/waybar/style.css")

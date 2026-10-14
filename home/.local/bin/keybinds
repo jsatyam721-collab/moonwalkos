@@ -1,0 +1,25 @@
+#!/bin/bash
+hyprctl binds -j | jq -r '
+  .[] |
+  select(.description != "") |
+  [
+    (if .modmask == 64 then "Super"
+     elif .modmask == 65 then "Super+Shift"
+     elif .modmask == 68 then "Super+Ctrl"
+     elif .modmask == 72 then "Super+Alt"
+     elif .modmask == 76 then "Super+Ctrl+Alt"
+     elif .modmask == 69 then "Super+Shift+Ctrl"
+     elif .modmask == 8  then "Alt"
+     elif .modmask == 12 then "Ctrl+Alt"
+     elif .modmask == 5  then "Ctrl+Shift"
+     elif .modmask == 1  then "Shift"
+     elif .modmask == 0  then ""
+     else "Mod(\(.modmask))"
+     end),
+    .key,
+    .description
+  ] |
+  if .[0] == "" then "\(.[1])\t\(.[2])"
+  else "\(.[0])+\(.[1])\t\(.[2])"
+  end
+' | column -t -s $'\t' | fzf --prompt="keybinds> " --layout=reverse --height=80%

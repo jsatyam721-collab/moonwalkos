@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" stroke="#161616" stroke-linejoin="round" stroke-linecap="round">
+  <g id="shoe">
+    <path d="M30 31 L44 31 L44 52 L30 52 Z" fill="#ffffff" stroke-width="2.6"/>
+    <path d="M30 36 L44 36" fill="none" stroke-width="1.8"/>
+    <path d="M28 52 C28 49 31 48 34 48 L46 48 C52 49 58 52 66 54 C75 56 81 58 82 62 C82.5 66 79 68 73 68 L32 68 C29 68 27 66 27 63 Z" fill="#161616" stroke-width="2.4"/>
+    <path d="M27.5 63 L82 63" fill="none" stroke="#161616" stroke-width="2"/>
+    <path d="M47 50 C51 53 56 54.5 63 55.5" fill="none" stroke="#8a8a8a" stroke-width="1.6"/>
+    <path d="M36 57 L60 58.5" fill="none" stroke="#3a3a3a" stroke-width="1.2"/>
+  </g>
+  <use href="#shoe" transform="translate(-14 11)"/>
+</svg>

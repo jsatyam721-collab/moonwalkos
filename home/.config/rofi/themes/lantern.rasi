@@ -1,0 +1,193 @@
+/**
+ * Lantern — Mogo's construct emerald for the rofi menus (windows, files, run).
+ * Attribute: rofilaunch,launcher
+ */
+
+configuration {
+    modi:                        "drun,window,filebrowser,run";
+    show-icons:                  true;
+    display-drun:                "APPS";
+    display-window:              "WINDOWS";
+    display-filebrowser:         "FILES";
+    display-run:                 "RUN";
+    drun-display-format:         "{name}";
+    window-format:               "{t}";
+}
+
+* {
+    void:                        #020604F2;
+    glass:                       #06120AF0;
+    deep:                        #0B2418FF;
+    edge:                        #53F5A966;
+    lantern:                     #53F5A9FF;
+    core:                        #B8FFE2FF;
+    ink:                         #04120AFF;
+    text:                        #C8F5E4FF;
+    dim:                         #6E9C88FF;
+    faint:                       #2E5A46FF;
+    mono:                        "JetBrains Mono 11";
+    mono-small:                  "JetBrains Mono Bold 8";
+    background-color:            transparent;
+    text-color:                  @text;
+}
+
+window {
+    width:                       640px;
+    location:                    center;
+    anchor:                      center;
+    transparency:                "real";
+    padding:                     0px;
+    border:                      1px;
+    border-radius:               26px;
+    border-color:                @edge;
+    background-color:            @void;
+}
+
+mainbox {
+    padding:                     22px 22px 18px 22px;
+    spacing:                     14px;
+    children:                    [ "header", "inputbar", "listview", "mode-switcher" ];
+}
+
+header {
+    orientation:                 horizontal;
+    expand:                      false;
+    children:                    [ "textbox-sector", "textbox-quote" ];
+}
+
+textbox-sector {
+    expand:                      true;
+    str:                         "SECTOR 2814 · MOGO";
+    font:                        @mono-small;
+    text-color:                  @faint;
+}
+
+textbox-quote {
+    expand:                      false;
+    str:                         "“Mogo doesn't socialize.”";
+    font:                        "JetBrains Mono Italic 8";
+    text-color:                  @faint;
+}
+
+inputbar {
+    spacing:                     12px;
+    padding:                     12px 20px;
+    border:                      1px;
+    border-radius:               26px;
+    border-color:                @edge;
+    background-color:            @glass;
+    children:                    [ "textbox-emblem", "entry", "prompt" ];
+}
+
+textbox-emblem {
+    expand:                      false;
+    str:                         "◉";
+    font:                        "JetBrains Mono Bold 13";
+    text-color:                  @lantern;
+    vertical-align:              0.5;
+}
+
+entry {
+    font:                        @mono;
+    text-color:                  @core;
+    cursor-color:                @lantern;
+    cursor-width:                8px;
+    placeholder:                 "will a construct into existence…";
+    placeholder-color:           @dim;
+    vertical-align:              0.5;
+}
+
+prompt {
+    font:                        @mono-small;
+    text-color:                  @lantern;
+    vertical-align:              0.5;
+}
+
+listview {
+    lines:                       8;
+    columns:                     1;
+    spacing:                     4px;
+    cycle:                       true;
+    dynamic:                     true;
+    fixed-height:                false;
+    scrollbar:                   false;
+}
+
+element {
+    padding:                     8px 14px;
+    spacing:                     12px;
+    cursor:                      pointer;
+}
+
+element normal.normal,
+element alternate.normal,
+element normal.active,
+element alternate.active,
+element normal.urgent,
+element alternate.urgent {
+    border-radius:               14px;
+    border:                      0px;
+    background-color:            transparent;
+    text-color:                  @text;
+}
+
+element selected.normal,
+element selected.active,
+element selected.urgent {
+    border-radius:               14px;
+    border:                      1px;
+    border-color:                @lantern;
+    background-color:            @deep;
+    text-color:                  @core;
+}
+
+element-icon {
+    size:                        24px;
+    background-color:            transparent;
+    vertical-align:              0.5;
+}
+
+element-text {
+    font:                        @mono;
+    background-color:            transparent;
+    text-color:                  inherit;
+    vertical-align:              0.5;
+}
+
+mode-switcher {
+    spacing:                     8px;
+}
+
+button {
+    font:                        @mono-small;
+    padding:                     6px 10px;
+    border-radius:               14px;
+    border:                      1px;
+    border-color:                @faint;
+    background-color:            transparent;
+    text-color:                  @dim;
+    cursor:                      pointer;
+}
+
+button selected {
+    border-color:                @lantern;
+    background-color:            @deep;
+    text-color:                  @lantern;
+}
+
+message {
+    padding:                     6px 10px;
+    border-radius:               14px;
+    background-color:            @glass;
+}
+
+textbox {
+    font:                        @mono-small;
+    text-color:                  @dim;
+}
+
+error-message {
+    padding:                     20px;
+    border-radius:               26px;
+    background-color:            @void;
+}

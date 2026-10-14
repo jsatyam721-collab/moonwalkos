@@ -1,0 +1,4 @@
+# Configuration file for MoonwalkOS
+# Environment variables should be on top
+# Updated config.toml file can be found at $HOME/.local/share/moonwalk/config.toml
+"$schema" = "https://raw.githubusercontent.com/HyDE-Project/MoonwalkOS/refs/heads/master/Configs/.local/share/moonwalk/schema/config.toml.json"

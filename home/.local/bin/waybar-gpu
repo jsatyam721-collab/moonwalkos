@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+command -v nvidia-smi >/dev/null || { echo '{"text":"","class":"none"}'; exec sleep infinity; }
+icon="<span font_family='JetBrainsMono Nerd Font Propo' weight='bold'>󰢮</span>"
+nvidia-smi --query-gpu=temperature.gpu,utilization.gpu,power.draw,clocks.gr --format=csv,noheader,nounits -lms 1000 |
+while IFS=', ' read -r t u p c; do
+    cls=normal
+    ((t >= 85)) && cls=critical
+    printf '{"text":"%s  %s° %s%%","tooltip":"<b>GPU</b>  RTX 4060 Laptop\\nTemp: %s°C\\nLoad: %s%%\\nPower: %s W\\nClock: %s MHz","class":"%s"}\n' "$icon" "$t" "$u" "$t" "$u" "$p" "$c" "$cls" || exit 0
+done

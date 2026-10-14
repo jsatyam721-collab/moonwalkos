@@ -1,0 +1,29 @@
+#!/bin/bash
+AC_PATH=$(ls /sys/class/power_supply/{AC,ACAD,ADP}*/online 2>/dev/null | head -1)
+AC_PATH=${AC_PATH:-/sys/class/power_supply/AC/online}
+SUNSET_PID=""
+
+start_hyprsunset() {
+    [[ -n "$SUNSET_PID" ]] && kill "$SUNSET_PID" 2>/dev/null
+    sleep 0.3
+    if [[ "$(cat "$AC_PATH" 2>/dev/null)" == "1" ]]; then
+        /usr/bin/hyprsunset --identity &
+    else
+        /usr/bin/hyprsunset -t 4500 &
+    fi
+    SUNSET_PID=$!
+}
+
+trap 'kill "$SUNSET_PID" 2>/dev/null' EXIT
+
+PREV_AC=$(cat "$AC_PATH" 2>/dev/null)
+start_hyprsunset
+
+while true; do
+    sleep 5
+    CURR_AC=$(cat "$AC_PATH" 2>/dev/null)
+    if [[ "$CURR_AC" != "$PREV_AC" ]]; then
+        PREV_AC="$CURR_AC"
+        start_hyprsunset
+    fi
+done

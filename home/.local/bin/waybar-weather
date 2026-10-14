@@ -1,0 +1,22 @@
+#!/usr/bin/env python3
+import json
+import os
+import subprocess
+
+env = dict(os.environ, WEATHER_TEMPERATURE_UNIT="c", WEATHER_SHOW_LOCATION="False", WEATHER_SHOW_ICON="True", WEATHER_TIME_FORMAT="12h", WEATHER_WINDSPEED_UNIT="km/h")
+icons = [("⛈", "󰙾"), ("🌩", "󰖓"), ("🌨", "󰖘"), ("❄", "󰖘"), ("🌧", "󰖗"), ("🌦", "󰖗"), ("🌫", "󰖑"), ("⛅", "󰖕"), ("🌤", "󰖕"), ("🌥", "󰖕"), ("☀", "󰖙"), ("☁", "󰖐")]
+try:
+    out = subprocess.run(["moonwalk-shell", "weather"], env=env, capture_output=True, text=True, timeout=25).stdout
+    data = json.loads(out)
+except Exception:
+    print(json.dumps({"text": "󰖐 --", "tooltip": "Weather unavailable", "class": "error"}))
+    raise SystemExit
+text = data.get("text", "")
+icon = "󰖐"
+for emoji, glyph in icons:
+    if emoji in text:
+        icon = glyph
+        break
+temp = "".join(ch for ch in text if ch.isdigit() or ch in "-+°C").strip()
+data["text"] = f"<span font_family='JetBrainsMono Nerd Font Propo' weight='bold'>{icon}</span>  {temp}"
+print(json.dumps(data))

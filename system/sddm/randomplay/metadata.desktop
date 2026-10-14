@@ -1,0 +1,11 @@
+[SddmGreeterTheme]
+Name=Random Play
+Description=CRT TV login in a video-store room, the VCR is the login
+Author=satyam
+Type=sddm-theme
+Version=1.0
+MainScript=Main.qml
+ConfigFile=theme.conf
+Theme-Id=randomplay
+Theme-API=2.0
+QtVersion=6

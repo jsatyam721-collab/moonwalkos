@@ -1,0 +1,2 @@
+#!/bin/bash
+zenity --password --title="sudo" --text="Enter password for sudo:" 2>/dev/null

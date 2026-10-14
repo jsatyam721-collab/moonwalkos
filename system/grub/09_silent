@@ -1,0 +1,6 @@
+#!/bin/sh
+cat <<'GRUBEOF'
+if [ "x${theme}" != "x" ]; then
+    set color_normal=black/black
+fi
+GRUBEOF

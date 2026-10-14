@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+pgrep -f '^qs -p .*/crtout' >/dev/null && exit 0
+for _ in $(seq 20); do pgrep -x wlogout >/dev/null || break; sleep 0.05; done
+grim -l 0 "$XDG_RUNTIME_DIR/crt-out.png" 2>/dev/null || exec moonwalk-shell logout
+exec qs -p "$HOME/.config/crtout"
