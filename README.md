@@ -66,4 +66,4 @@ installed them. Packages stay installed.
 
 ## License
 
-GPL-3.0, same as HyDE. See [CREDITS.md](CREDITS.md) for everything that isn't mine.
+GPL-3.0, same as HyDE. [CREDITS.md](CREDITS.md) lists where every third-party image, clip and theme comes from.

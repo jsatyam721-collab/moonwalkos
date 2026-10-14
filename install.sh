@@ -73,7 +73,10 @@ install_packages() {
 }
 
 entries() {
-    (cd "$SRC/home" && find .config .local/bin .local/lib .local/share -mindepth 1 -maxdepth 1 | sort)
+    (cd "$SRC/home" && {
+        find .config .local/bin .local/lib .local/share -mindepth 1 -maxdepth 1 ! -name environment.d ! -name sounds
+        find .config/environment.d .local/share/sounds -mindepth 1 -maxdepth 1
+    } | sort)
     printf '%s\n' .local/state/moonwalk .cache/moonwalk
 }
 
