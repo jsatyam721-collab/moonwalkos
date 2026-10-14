@@ -47,14 +47,20 @@ Options:
 ## Your old config
 
 Nothing gets deleted. Every folder or file the installer replaces is moved to
-`~/.local/state/moonwalk-install/backup-<date>/` first.
+`~/.local/state/moonwalk-install/backup-<date>/` first. Your GTK, Qt, Kvantum and
+cursor settings are copied there too, since switching themes edits them in place.
+
+Running `./install.sh` again updates MoonwalkOS and keeps that first backup. Any
+edits you made to the MoonwalkOS files are moved into `reinstall-<date>/` inside it.
 
 ```sh
-./uninstall.sh
+./uninstall.sh            # or: ./uninstall.sh ~/.local/state/moonwalk-install/backup-<date>
 ```
 
 removes MoonwalkOS and puts your files back, and undoes the system parts if you
-installed them. Packages stay installed.
+installed them (including turning SDDM back off if the installer turned it on).
+The MoonwalkOS versions of your settings files are kept in `uninstalled-<date>/`
+inside the backup. Packages stay installed.
 
 ## Notes
 

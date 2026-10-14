@@ -3,11 +3,30 @@ set -euo pipefail
 
 SRC=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 STATE="${XDG_STATE_HOME:-$HOME/.local/state}/moonwalk-install"
-BACKUP="$STATE/backup-$(date +%Y%m%d-%H%M%S)"
+STAMP=$(date +%Y%m%d-%H%M%S)
+BACKUP="$STATE/backup-$STAMP"
 PACKAGES=1
 DOWNLOAD=1
 SYSTEM=ask
 YES=0
+
+# files the theme switcher edits in place (not shipped in home/), copied before
+# the first theme apply so uninstall can put them back
+TOUCHED=(
+    .config/gtk-3.0/settings.ini
+    .config/gtk-4.0
+    .config/qt5ct/qt5ct.conf
+    .config/qt6ct/qt6ct.conf
+    .config/kdeglobals
+    .config/Kvantum
+    .config/xsettingsd/xsettingsd.conf
+    .gtkrc-2.0
+    .Xresources
+    .Xdefaults
+    .icons/default/index.theme
+    .local/share/icons/default/index.theme
+    .local/share/flatpak/overrides/global
+)
 
 usage() {
     cat <<EOF
@@ -22,6 +41,7 @@ Usage: ./install.sh [options]
 
 Everything it replaces in your home folder is moved to
 $STATE/ first, and ./uninstall.sh puts it back.
+Running it again updates MoonwalkOS and keeps the first backup of your files.
 EOF
 }
 
@@ -50,12 +70,39 @@ ask() {
 [[ $EUID -ne 0 ]] || { warn "run this as your normal user, not root"; exit 1; }
 command -v pacman >/dev/null || { warn "MoonwalkOS is made for Arch Linux (pacman not found)"; exit 1; }
 
+# an earlier install keeps its backup: re-running must never back up our own
+# files over the user's originals
+REINSTALL=0
+if [[ -f $STATE/latest/manifest ]]; then
+    BACKUP=$(readlink -f "$STATE/latest")
+    REINSTALL=1
+fi
+
 install_packages() {
     say "installing packages"
-    local -a repo aur
-    mapfile -t repo < <(grep -vE '^\s*(#|$)' "$SRC/pkgs/repo.lst")
+    local -a list repo=() aur confirm=()
+    ((YES)) && confirm=(--noconfirm)
+    mapfile -t list < <(grep -vE '^\s*(#|$)' "$SRC/pkgs/repo.lst")
     mapfile -t aur < <(grep -vE '^\s*(#|$)' "$SRC/pkgs/aur.lst")
-    sudo pacman -S --needed --noconfirm "${repo[@]}"
+
+    # names the sync databases don't know go to the AUR helper instead,
+    # so one misplaced name can't fail the whole pacman call
+    local -A known=()
+    local p
+    while read -r p; do known[$p]=1; done < <(pacman -Slq)
+    for p in "${list[@]}"; do
+        if [[ -n ${known[$p]:-} ]]; then
+            repo+=("$p")
+        else
+            aur+=("$p")
+        fi
+    done
+
+    if ! sudo pacman -S --needed "${confirm[@]}" "${repo[@]}"; then
+        warn "pacman failed. if it couldn't download, run 'sudo pacman -Syu' and try again."
+        warn "if it stopped on a conflict (like pulseaudio vs pipewire-pulse), run without -y and let it replace the package."
+        exit 1
+    fi
 
     local helper
     helper=$(command -v paru || command -v yay || true)
@@ -70,6 +117,13 @@ install_packages() {
         helper=$(command -v yay)
     fi
     "$helper" -S --needed --noconfirm "${aur[@]}"
+
+    # the theme switcher needs hyq to turn hypr.theme into lua
+    if ! command -v hyq >/dev/null; then
+        "$helper" -S --needed --noconfirm hyprquery ||
+            "$helper" -S --needed --noconfirm hyprquery-git ||
+            warn "couldn't install hyprquery (hyq), theme switching won't work until it's installed"
+    fi
 }
 
 entries() {
@@ -80,26 +134,65 @@ entries() {
     printf '%s\n' .local/state/moonwalk .cache/moonwalk
 }
 
-install_home() {
-    say "saving what gets replaced to $BACKUP"
-    mkdir -p "$BACKUP"
-    : >"$BACKUP/manifest"
+save_touched() {
+    # copied, not moved: these stay in use and the theme switcher edits them
+    touch "$BACKUP/touched"
     local e
+    for e in "${TOUCHED[@]}"; do
+        grep -qxF "$e" "$BACKUP/touched" && continue
+        if [[ -e $HOME/$e || -L $HOME/$e ]]; then
+            mkdir -p "$BACKUP/touched.d/$(dirname "$e")"
+            cp -a "$HOME/$e" "$BACKUP/touched.d/$e"
+        fi
+        printf '%s\n' "$e" >>"$BACKUP/touched"
+    done
+    if [[ ! -e $BACKUP/dconf-interface.ini ]] && command -v dconf >/dev/null; then
+        dconf dump /org/gnome/desktop/interface/ >"$BACKUP/dconf-interface.ini" 2>/dev/null ||
+            rm -f "$BACKUP/dconf-interface.ini"
+    fi
+}
+
+install_home() {
+    mkdir -p "$BACKUP"
+    touch "$BACKUP/manifest"
+    # linked first, so an install that dies halfway can still be undone
+    ln -sfn "$BACKUP" "$STATE/latest"
+
+    local e old="$BACKUP/reinstall-$STAMP"
+    if ((REINSTALL)); then
+        say "updating MoonwalkOS, your original files stay in $BACKUP"
+    else
+        say "saving what gets replaced to $BACKUP"
+    fi
     while read -r e; do
+        if grep -qxF "$e" "$BACKUP/manifest"; then
+            # ours from the last install: keep any edits made since, out of the way
+            if [[ -e $SRC/home/$e ]] && [[ -e $HOME/$e || -L $HOME/$e ]]; then
+                mkdir -p "$old/$(dirname "$e")"
+                mv "$HOME/$e" "$old/$e"
+            fi
+            continue
+        fi
         if [[ -e $HOME/$e || -L $HOME/$e ]]; then
             mkdir -p "$BACKUP/$(dirname "$e")"
             mv "$HOME/$e" "$BACKUP/$e"
         fi
         printf '%s\n' "$e" >>"$BACKUP/manifest"
     done < <(entries)
+    [[ -d $old ]] && say "your edits to the previous MoonwalkOS files are in $old"
+    save_touched
 
     say "copying MoonwalkOS into $HOME"
     cp -a "$SRC/home/." "$HOME/"
     while read -r e; do
         [[ -e $HOME/$e ]] && grep -rIlZ '@HOME@' "$HOME/$e" 2>/dev/null || true
     done <"$BACKUP/manifest" | xargs -0 -r sed -i "s|@HOME@|$HOME|g"
-    chmod +x "$HOME"/.local/bin/* "$HOME"/.local/lib/moonwalk/*.sh 2>/dev/null || true
-    ln -sfn "$BACKUP" "$STATE/latest"
+    # only our own scripts, not whatever else lives in ~/.local/bin
+    local f
+    while read -r f; do
+        chmod +x "$HOME/.local/bin/$f"
+    done < <(find "$SRC/home/.local/bin" -maxdepth 1 -type f -printf '%f\n')
+    chmod +x "$HOME"/.local/lib/moonwalk/*.sh 2>/dev/null || true
 }
 
 setup_engine() {
@@ -113,39 +206,61 @@ setup_engine() {
         warn "theme download didn't finish, run 'moonwalk-shell theme.import.py --fetch all' later"
 }
 
+mark() { grep -qxF "$1" "$BACKUP/system" || echo "$1" >>"$BACKUP/system"; }
+
 install_system() {
     say "system pieces (these need sudo)"
-    : >"$BACKUP/system"
+    touch "$BACKUP/system"
 
     if ask "Random Play login screen (SDDM on weston)?"; then
         sudo pacman -S --needed --noconfirm sddm weston qt6-multimedia
         sudo rm -rf /usr/share/sddm/themes/randomplay
         sudo cp -r "$SRC/system/sddm/randomplay" /usr/share/sddm/themes/
         sudo install -Dm644 "$SRC/system/sddm/zz-moonwalk.conf" /etc/sddm.conf.d/zz-moonwalk.conf
-        echo sddm >>"$BACKUP/system"
+        mark sddm
         if grep -qs '^Current=' /etc/sddm.conf; then
             warn "/etc/sddm.conf sets its own theme and wins over ours, remove its Current= line"
         fi
-        systemctl is-enabled display-manager.service >/dev/null 2>&1 || sudo systemctl enable sddm.service
+        local dm
+        dm=$(readlink -e /etc/systemd/system/display-manager.service || true)
+        if [[ -z $dm ]]; then
+            sudo systemctl enable sddm.service
+            mark sddm-enabled
+        elif [[ ${dm##*/} != sddm.service ]]; then
+            warn "${dm##*/} is your login manager, the Random Play screen only shows with SDDM."
+            warn "to switch: sudo systemctl disable ${dm##*/} && sudo systemctl enable sddm"
+        fi
     fi
 
     if ask "Darth Vader boot splash (Plymouth)?"; then
         sudo pacman -S --needed --noconfirm plymouth
-        plymouth-set-default-theme >"$BACKUP/plymouth-previous" 2>/dev/null || true
+        # the first install's answer is the one uninstall goes back to
+        if ! grep -qxF plymouth "$BACKUP/system"; then
+            plymouth-set-default-theme >"$BACKUP/plymouth-previous" 2>/dev/null || true
+            # a darth_vader you already had is kept, uninstall puts it back
+            if [[ -d /usr/share/plymouth/themes/darth_vader ]]; then
+                mkdir -p "$BACKUP/plymouth-theme"
+                sudo tar -C /usr/share/plymouth/themes -cf - darth_vader | tar -C "$BACKUP/plymouth-theme" -xf -
+            fi
+        fi
         sudo rm -rf /usr/share/plymouth/themes/darth_vader
         sudo cp -r "$SRC/system/plymouth/darth_vader" /usr/share/plymouth/themes/
         sudo plymouth-set-default-theme -R darth_vader
-        echo plymouth >>"$BACKUP/system"
+        mark plymouth
         grep -q plymouth /etc/mkinitcpio.conf || warn "add 'plymouth' to HOOKS in /etc/mkinitcpio.conf and 'splash' to your kernel line to see it"
     fi
 
     if [[ -f /boot/grub/grub.cfg && -f /etc/grub.d/10_linux ]] && ask "Hide the GRUB boot text?"; then
-        sudo cp -a /etc/grub.d/10_linux "$BACKUP/10_linux.orig"
+        # only the first time: a later run would save an already patched copy
+        if [[ ! -e $BACKUP/10_linux.orig ]]; then
+            sudo cat /etc/grub.d/10_linux >"$BACKUP/10_linux.orig"
+            pacman -Q grub >"$BACKUP/grub-version" 2>/dev/null || true
+        fi
         sudo install -m755 "$SRC/system/grub/09_silent" /etc/grub.d/09_silent
         sudo install -Dm644 "$SRC/system/grub/90-grub-quiet.hook" /etc/pacman.d/hooks/90-grub-quiet.hook
         sudo install -Dm755 "$SRC/system/grub/grub-quiet-patch" /usr/local/sbin/grub-quiet-patch
         sudo /usr/local/sbin/grub-quiet-patch
-        echo grub >>"$BACKUP/system"
+        mark grub
     fi
 }
 

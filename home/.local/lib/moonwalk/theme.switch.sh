@@ -168,7 +168,13 @@ else
     gtk4Theme="Wallbash-Gtk"
     print_log -sec "theme" -stat "use" "'Wallbash-Gtk' as gtk4 theme"
 fi
-rm -rf "$confDir/gtk-4.0"
+if [ -d "$confDir/gtk-4.0" ] && [ ! -L "$confDir/gtk-4.0" ]; then
+    # a real folder is the user's own gtk4 setup, keep it instead of deleting it
+    mv "$confDir/gtk-4.0" "$confDir/gtk-4.0.bak-$(date +%Y%m%d-%H%M%S)"
+    print_log -sec "theme" -warn "gtk4" "moved your ~/.config/gtk-4.0 aside to gtk-4.0.bak-*"
+else
+    rm -f "$confDir/gtk-4.0"
+fi
 if [ -d "$themesDir/$gtk4Theme/gtk-4.0" ]; then
     ln -s "$themesDir/$gtk4Theme/gtk-4.0" "$confDir/gtk-4.0"
 else
