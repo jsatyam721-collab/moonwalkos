@@ -25,7 +25,7 @@ their owners. If you own one of them and want it gone, open an issue and I'll re
 |---|---|---|
 | Random Play login (`system/sddm/randomplay/room.png`) | video store room | Random Play from *Zenless Zone Zero*, © HoYoverse. Upscaled. |
 | Random Play login (`tv.mp4`) | clip playing on the TV | "Chainsmoker Cat References" by The Victory Over Himself, https://www.youtube.com/watch?v=BENouaA1vmo |
-| Lock screen (`.local/share/mjlock/moonwalk.mp4`) | moonwalk silhouette | Michael Jackson, *Billie Jean* live at Motown 25 (1983), official 4K remaster, © Optimum Productions / Sony Music. Cut out and composited. |
+| Lock screen (`.local/share/mjlock/moonwalk.mp4`) | moonwalk silhouette | Michael Jackson, *Billie Jean* live at Motown 25 (1983), official 4K remaster, © the Michael Jackson Estate and the respective rights holders. Cut out and composited. |
 | Lock screen moon | full moon photo | "FullMoon2010" by Gregory H. Revera, CC BY-SA 3.0, Wikimedia Commons |
 | Michael theme (`.config/moonwalk/themes/Michael/wallpapers`) | wallpapers | Michael Jackson photos via https://www.wallpaperflare.com |
 | Music player (`.config/musicwidget/stewie.webp`) | dancing Stewie | *Family Guy*, © 20th Television. Green screen by Green Screen VFX, https://www.youtube.com/watch?v=jprsec2i-2U |
