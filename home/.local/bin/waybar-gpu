@@ -1,9 +1,95 @@
 #!/usr/bin/env bash
-command -v nvidia-smi >/dev/null || { echo '{"text":"","class":"none"}'; exec sleep infinity; }
+# GPU load/temp for waybar on NVIDIA, AMD or Intel. Reads sysfs where it can,
+# and never wakes a discrete GPU that runtime PM has put to sleep: on a hybrid
+# laptop that would cost battery the whole time the bar is up.
 icon="<span font_family='JetBrainsMono Nerd Font Propo' weight='bold'>󰢮</span>"
-nvidia-smi --query-gpu=temperature.gpu,utilization.gpu,power.draw,clocks.gr --format=csv,noheader,nounits -lms 1000 |
-while IFS=', ' read -r t u p c; do
+none() { echo '{"text":"","class":"none"}'; exec sleep infinity; }
+num() { local v; v=$(cat "$@" 2>/dev/null | head -1) && [[ $v =~ ^[0-9]+$ ]] && echo "$v"; }
+
+# prefer the discrete card: nvidia, then amd, then intel
+card="" vendor=""
+for c in /sys/class/drm/card[0-9]*; do
+    [[ ${c##*/} == *-* ]] && continue
+    case $(cat "$c/device/vendor" 2>/dev/null) in
+    0x10de) card=$c vendor=nvidia; break ;;
+    0x1002) [[ $vendor == amd ]] || { card=$c vendor=amd; } ;;
+    0x8086) [[ -n $vendor ]] || { card=$c vendor=intel; } ;;
+    esac
+done
+[[ -n $card ]] || none
+[[ $vendor != nvidia ]] || command -v nvidia-smi >/dev/null || none
+dev=$(readlink -f "$card/device")
+hwmon=("$dev"/hwmon/hwmon*)
+hwmon=${hwmon[0]}
+[[ -d $hwmon ]] || hwmon=""
+name=""
+
+asleep() { [[ $(cat "$dev/power/runtime_status" 2>/dev/null) == suspended ]]; }
+
+# nvidia-smi holds the GPU open while it runs, so polling it would keep a
+# runtime-PM laptop GPU awake forever. There, only ask it when some other
+# process already has the card open.
+nvidia_in_use() {
+    [[ $(cat "$dev/power/control" 2>/dev/null) == auto ]] || return 0
+    find /proc/[0-9]*/fd -maxdepth 1 -lname '/dev/nvidia[0-9]*' -print -quit 2>/dev/null | grep -q .
+}
+
+gpu_name() {
+    [[ -n $name ]] && return
+    name=$(lspci -mm -s "${dev##*/}" 2>/dev/null | awk -F'"' '{print $6}')
+    if [[ $name == *\[*\]* ]]; then
+        name=${name#*\[}
+        name=${name%\]*}
+    fi
+    name=${name:-${vendor^^} GPU}
+}
+
+emit() { # text tooltip class
+    printf '{"text":"%s  %s","tooltip":"<b>GPU</b>  %s\\n%s","class":"%s"}\n' "$icon" "$1" "$name" "$2" "$3" || exit 0
+}
+
+while :; do
+    gpu_name
+    if asleep; then
+        emit "off" "Asleep (not in use)" idle
+        sleep 2
+        continue
+    fi
+    if [[ $vendor == nvidia ]] && ! nvidia_in_use; then
+        emit "idle" "Awake, no apps using it" idle
+        sleep 2
+        continue
+    fi
+    t="" u="" p="" c=""
+    case $vendor in
+    nvidia)
+        IFS=', ' read -r t u p c < <(nvidia-smi --query-gpu=temperature.gpu,utilization.gpu,power.draw,clocks.gr --format=csv,noheader,nounits 2>/dev/null)
+        p=${p%%.*}
+        ;;
+    amd)
+        u=$(num "$dev/gpu_busy_percent")
+        if [[ -n $hwmon ]]; then
+            t=$(num "$hwmon/temp1_input") && t=$((t / 1000))
+            p=$(num "$hwmon/power1_average" "$hwmon/power1_input") && p=$((p / 1000000))
+            c=$(num "$hwmon/freq1_input") && c=$((c / 1000000))
+        fi
+        ;;
+    intel)
+        c=$(num "$card/gt_act_freq_mhz" "$dev"/tile0/gt0/freq0/act_freq)
+        [[ -n $hwmon ]] && t=$(num "$hwmon/temp1_input") && t=$((t / 1000))
+        ;;
+    esac
     cls=normal
-    ((t >= 85)) && cls=critical
-    printf '{"text":"%s  %s° %s%%","tooltip":"<b>GPU</b>  RTX 4060 Laptop\\nTemp: %s°C\\nLoad: %s%%\\nPower: %s W\\nClock: %s MHz","class":"%s"}\n' "$icon" "$t" "$u" "$t" "$u" "$p" "$c" "$cls" || exit 0
+    [[ $t =~ ^[0-9]+$ ]] && ((t >= 85)) && cls=critical
+    if [[ -n $t && -n $u ]]; then
+        text="$t° $u%"
+    elif [[ -n $u ]]; then
+        text="$u%"
+    elif [[ -n $c ]]; then
+        text="$c MHz"
+    else
+        text="--"
+    fi
+    emit "$text" "Temp: ${t:---}°C\\nLoad: ${u:---}%\\nPower: ${p:---} W\\nClock: ${c:---} MHz" "$cls"
+    sleep 2
 done

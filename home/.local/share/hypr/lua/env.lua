@@ -48,8 +48,46 @@ local function has_nvidia_working()
 
 	return state == "live"
 end
-if has_nvidia_working() then
-	hl.env("LIBVA_DRIVER_NAME", "nvidia")
+
+local function read_line(path)
+	local f = io.open(path, "r")
+	if not f then
+		return nil
+	end
+	local line = f:read("*l")
+	f:close()
+	return line
+end
+
+-- On a hybrid laptop the iGPU drives the panel and NVIDIA only renders on
+-- request; pointing GBM and GLX at nvidia there keeps the dGPU awake and
+-- breaks apps on the iGPU. So the vars only go on when NVIDIA is the GPU the
+-- firmware booted on (boot_vga), or the only GPU there is. Plain file reads,
+-- same as above, so this stays well inside the config time budget.
+local function nvidia_drives_display()
+	local other_gpu = false
+	for i = 0, 15 do
+		local base = "/sys/class/drm/card" .. i .. "/device/"
+		local vendor = read_line(base .. "vendor")
+		if vendor then
+			if read_line(base .. "boot_vga") == "1" then
+				return vendor == "0x10de"
+			end
+			if vendor ~= "0x10de" then
+				other_gpu = true
+			end
+		end
+	end
+	return not other_gpu
+end
+
+if has_nvidia_working() and nvidia_drives_display() then
 	hl.env("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
 	hl.env("GBM_BACKEND", "nvidia-drm")
+	-- VA-API on nvidia needs libva-nvidia-driver; without it video decode fails
+	local vaapi = io.open("/usr/lib/dri/nvidia_drv_video.so", "rb")
+	if vaapi then
+		vaapi:close()
+		hl.env("LIBVA_DRIVER_NAME", "nvidia")
+	end
 end

@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 temp=$(grep -lxE "coretemp|k10temp|zenpower" /sys/class/hwmon/hwmon*/name 2>/dev/null | head -1)
-temp=${temp%/name}/temp1_input
+if [[ -n $temp ]]; then
+    temp=${temp%/name}/temp1_input
+else
+    # no CPU hwmon driver (VMs, some laptops): use the package or ACPI thermal zone
+    temp=$(grep -lxE "x86_pkg_temp|acpitz" /sys/class/thermal/thermal_zone*/type 2>/dev/null | head -1)
+    temp=${temp:+${temp%/type}/temp}
+fi
 model=$(awk -F': ' '/model name/{print $2; exit}' /proc/cpuinfo)
 read -r _ a b c idle e f g _ < /proc/stat
 pt=$((a + b + c + idle + e + f + g)); pi=$idle
@@ -10,9 +16,10 @@ while :; do
     t=$((a + b + c + idle + e + f + g))
     u=$(( (100 * ((t - pt) - (idle - pi))) / (t - pt) ))
     pt=$t; pi=$idle
-    c=$(( $(cat $temp) / 1000 ))
+    c=--
+    [[ -n $temp ]] && { read -r v <"$temp"; } 2>/dev/null && [[ $v =~ ^[0-9]+$ ]] && c=$((v / 1000))
     mhz=$(awk '/MHz/{s+=$4; n++} END{printf "%d", s/n}' /proc/cpuinfo)
     cls=normal
-    ((c >= 90)) && cls=critical
+    [[ $c != -- ]] && ((c >= 90)) && cls=critical
     printf '{"text":"<span font_family='\''JetBrainsMono Nerd Font Propo'\'' weight='\''bold'\''>󰍛</span>  %s° %s%%","tooltip":"<b>CPU</b>  %s\\nTemp: %s°C\\nLoad: %s%%\\nAvg clock: %s MHz","class":"%s"}\n' "$c" "$u" "$model" "$c" "$u" "$mhz" "$cls" || exit 0
 done

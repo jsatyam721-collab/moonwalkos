@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 scrDir=$(dirname "$(realpath "$0")")
 gpuinfo_file="/tmp/moonwalk-$UID-gpuinfo"
-AQ_DRM_DEVICES="${AQ_DRM_DEVICES:-WLR_DRM_DEVICES}"
+AQ_DRM_DEVICES="${AQ_DRM_DEVICES:-${WLR_DRM_DEVICES:-}}"
 tired=false
 if [[ " $* " =~ " --tired " ]]; then
     if ! grep -q "tired" "$gpuinfo_file"; then

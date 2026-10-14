@@ -190,6 +190,10 @@ tooltip label {
     margin-left: 10px;
 }
 
+#custom-gpu.idle {
+    opacity: 0.6;
+}
+
 #custom-cpu.critical,
 #custom-gpu.critical {
     color: @bb-shine;
